@@ -12,8 +12,8 @@ obsoletes:
 updates:
 # date: 2022-02-02 -- date is filled in automatically by xml2rfc if not given
 
-area: Routing
-workgroup: idr
+area: "Routing"
+workgroup: "Inter-Domain Routing"
 
 kw:
   - Multi-segment SD-WAN
