@@ -7,7 +7,7 @@ lang: en
 
 title: Edge-to-edge Encryption in Multi-segment SD-WAN
 abbrev: e2e encryption SDWAN
-docname: draft-sheng-idr-e2e-encryption-in-sd-wan-00
+docname: draft-sheng-idr-e2e-encryption-in-sd-wan-latest
 obsoletes:
 updates:
 # date: 2022-02-02 -- date is filled in automatically by xml2rfc if not given
