@@ -7,7 +7,7 @@ lang: en
 
 title: Edge-to-edge Encryption in Multi-segment SD-WAN
 abbrev: e2e encryption SDWAN
-docname: draft-sheng-idr-e2e-encryption-in-sd-wan-latest
+docname: draft-sheng-idr-e2e-encryption-in-sd-wan-00
 obsoletes:
 updates:
 # date: 2022-02-02 -- date is filled in automatically by xml2rfc if not given
@@ -33,14 +33,6 @@ author:
   organization: Huawei
   email: shihang9@huawei.com
   role: editor
-  street: Beiqing Road
-  city: Beijing
-  country: China
- -  
-  ins: H. Wang
-  name: Haibo Wang
-  organization: Huawei
-  email: rainsword.wang@huawei.com
   street: Beiqing Road
   city: Beijing
   country: China
@@ -76,7 +68,7 @@ To interconnect geographically faraway branches or SASE resources, multi-segment
        | <-Public Internet-> |
     +--+--+                +--+--+
     |CPE 1|                |CPE 2|
-    +-----+                +-----+              
+    +-----+                +-----+
 ~~~
 {: #Scenario  title="Multi-segment SD-WAN"}
 
@@ -184,3 +176,9 @@ This document does not introduce any new security considerations.
 # IANA Considerations
 
 TBD.
+
+--- back
+
+# Acknowledgements
+
+The authors would like to thank Haibo Wang for his contribution to the document.
