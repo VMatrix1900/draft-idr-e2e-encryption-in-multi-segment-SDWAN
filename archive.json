@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-06-01T01:37:38.203384+00:00",
+  "timestamp": "2025-06-03T01:17:05.599693+00:00",
   "repo": "VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN",
   "labels": [
     {
@@ -91,7 +91,7 @@
       "id": "PR_kwDOJ514aM6Rjcjj",
       "title": "upstream merge template repository",
       "url": "https://github.com/VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN/pull/2",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "VMatrix1900",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -100,13 +100,49 @@
       ],
       "body": "Merge https://github.com/martinthomson/internet-draft-template 9bbaf3f",
       "createdAt": "2025-04-07T00:54:47Z",
-      "updatedAt": "2025-04-07T00:54:48Z",
+      "updatedAt": "2025-06-02T00:59:17Z",
       "baseRepository": "VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN",
       "baseRefName": "main",
       "baseRefOid": "84f90539fac2650a69301a6aeda6d4562b58cc1d",
       "headRepository": "VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN",
       "headRefName": "chore/template_sync_9bbaf3f",
       "headRefOid": "5955a151f4f7214d63a33e077f3b22182f2a3819",
+      "closedAt": "2025-06-02T00:59:17Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "VMatrix1900",
+          "authorAssociation": "OWNER",
+          "body": "[actions-template-sync] :construction_worker: automatically closed because there is a new open PR",
+          "createdAt": "2025-06-02T00:59:16Z",
+          "updatedAt": "2025-06-02T00:59:16Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOJ514aM6YhUv0",
+      "title": "upstream merge template repository",
+      "url": "https://github.com/VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN/pull/3",
+      "state": "OPEN",
+      "author": "VMatrix1900",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "template_sync"
+      ],
+      "body": "Merge https://github.com/martinthomson/internet-draft-template 25d2fb2",
+      "createdAt": "2025-06-02T00:59:18Z",
+      "updatedAt": "2025-06-02T00:59:19Z",
+      "baseRepository": "VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN",
+      "baseRefName": "main",
+      "baseRefOid": "84f90539fac2650a69301a6aeda6d4562b58cc1d",
+      "headRepository": "VMatrix1900/draft-idr-e2e-encryption-in-multi-segment-SDWAN",
+      "headRefName": "chore/template_sync_25d2fb2",
+      "headRefOid": "d11111b509dcbf45a332b8f032916e9e4d800d9f",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
