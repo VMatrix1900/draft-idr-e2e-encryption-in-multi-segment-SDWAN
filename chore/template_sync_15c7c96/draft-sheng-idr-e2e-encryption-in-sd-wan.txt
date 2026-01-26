@@ -1,0 +1,333 @@
+
+
+
+
+Inter-Domain Routing                                            C. Sheng
+Internet-Draft                                               H. Shi, Ed.
+Intended status: Standards Track                                  Huawei
+Expires: 30 July 2026                                    26 January 2026
+
+
+            Edge-to-edge Encryption in Multi-segment SD-WAN
+            draft-sheng-idr-e2e-encryption-in-sd-wan-latest
+
+Abstract
+
+   The document describes the control plane enhancement for multi-
+   segment SD-WAN to implement Edge-to-edge encryption, GW information
+   exchange, include/exclude transit list exchange.
+
+Discussion Venues
+
+   This note is to be removed before publishing as an RFC.
+
+   Discussion of this document takes place on the Inter-Domain Routing
+   Working Group mailing list (idr@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/idr/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/VMatrix1900/draft-idr-e2e-encryption-in-multi-
+   segment-SDWAN.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 30 July 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Requirements Language
+   3.  Exchange IPSec SA for edge-to-edge encryption
+   4.  Exchange corresponding GW information between edges
+     4.1.  Option 1: Link SID
+     4.2.  Option 2: Gateway ID + tunnel IP address
+   5.  Exchange include/exclude transit list from destination edge to
+           source edge
+   6.  Security Considerations
+   7.  IANA Considerations
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
+   Appendix A.  Acknowledgements
+   Authors' Addresses
+
+1.  Introduction
+
+   To interconnect geographically faraway branches or SASE resources,
+   multi-segment SD-WAN is often deployed via cloud
+   backbone[I-D.draft-dmk-rtgwg-multisegment-sdwan].  This document
+   focuses on the scenario where the edge connects to the Cloud GW
+   through unsafe public network such as internet, as shown in Figure 1.
+   IPSec encryption is used to provide the authentication, integrity and
+   confidentiality of the data from edge to edge.
+
+     (^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^)
+     (            Region2             )
+     (            +-----+             )
+     (            | GW2 |             )
+     (            +-----+             )
+     (           /       \            )
+     (          /  Cloud  \           )
+     (         /  Backbone \          )
+     ( Region1/             \Region3  )
+     ( +-----+               +-----+  )
+     ( | GW1 |---------------| GW3 |  )
+     ( +--+--+               +--+--+  )
+     (^^^^|^^^^^^^^^^^^^^^^^^^^^|^^^^^)
+          |                     |
+          | <-Public Internet-> |
+       +--+--+                +--+--+
+       |CPE 1|                |CPE 2|
+       +-----+                +-----+
+
+                       Figure 1: Multi-segment SD-WAN
+
+   To reduce the computing overhead of the Cloud GW, it is preferred to
+   establish IPSec tunnel from edge to edge rather than from edge to
+   Cloud GW.  The overlay routing information is carried outside of the
+   encrypted payload.  When GW receives packet from CPE, it only needs
+   to look at the unencrypted overlay routing header to do the
+   forwarding.  This document describes the control plane enhancement on
+   top of [I-D.draft-ietf-idr-sdwan-edge-discovery] to exchange the
+   IPSec SA and corresponding GW information between edges to enable
+   edge-to-edge IPSec encryption.  This document also defines an
+   extension to exchange the include/exclude transit list information
+   from egress edge to ingress edge.
+
+2.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+3.  Exchange IPSec SA for edge-to-edge encryption
+
+   All CPEs are under the control of one BGP instance.
+   [I-D.draft-ietf-idr-sdwan-edge-discovery] defines the mechanism for
+   SD-WAN edges to discover each other's properties.  The IPSec Key
+   exchange between the CPE is via BGP update through RR.  However, the
+   granularity of IPSec SA in [I-D.draft-ietf-idr-sdwan-edge-discovery]
+   is limited to per site, per node or per port and it does not specify
+   if the IPSec is between edge to edge or edge to Cloud GW.  To that
+   end, this document defines a new route type to exchange the IPSec SA
+   for edge-to-edge IPSec encryption.  The format is shown in Figure 2.
+
+                  +---------------------+
+                  |  Route Type = TBD   | 2 octet
+                  +---------------------+
+                  |       Length        | 2 Octet
+                  +---------------------+
+                  | Route-Distinguisher | 8 octets
+                  +---------------------+
+                  |     SD-WAN-Color    | 4 octets
+                  +---------------------+
+                  |    SD-WAN-Node-ID   | 4 or 16 octets
+                  +---------------------+
+
+                Figure 2: Edge-to-edge IPSec encryption NLRI
+
+   where:
+
+   *  NLRI Route Type = TBD: For advertising edge-to-edge IPSec
+      encryption where the IPSec SA can be uniquely identified by a
+      tuple: <Route-Distinguisher, SD-WAN-Color, SD-WAN-Node-ID>
+
+   *  Route-Distinguisher: an 8-octet value used to distinguish routes
+      from different VPN (see [RFC4364]).
+
+   *  SD-WAN-Color: represent the SD-WAN site ID.
+
+   *  SD-WAN-Node-ID: The node's IPv4 or IPv6 address.
+
+   The IPSec SA related sub-TLVs remain the same as defined in
+   [I-D.draft-ietf-idr-sdwan-edge-discovery] and is carried in the SD-
+   WAN-Hybrid Tunnel Encapsulation attribute.
+
+4.  Exchange corresponding GW information between edges
+
+   To help the ingress Cloud GW(GW1) route and forward to the egress
+   Cloud GW, the source CPE need to carry the egress GW information in
+   the data plane.  To that end, the CPE need to discover the
+   corresponding GW and advertise the corresponding GW information to
+   other CPEs.  Note that there may exist multiple path between the CPE
+   and the corresponding GW.  The source CPE may need to choose a
+   specific path.  This document defines a new NLRI route-type to carry
+   the corresponding GW information.  The format is shown in Figure 3.
+
+                  +---------------------+
+                  |  Route Type = TBD   | 2 octet
+                  +---------------------+
+                  |       Length        | 2 octet
+                  +---------------------+
+                  |     SD-WAN-Color    | 4 octets
+                  +---------------------+
+                  |    SD-WAN-Node-ID   | 4 or 16 octets
+                  +---------------------+
+
+                Figure 3: Corresponding GW information NLRI
+
+   where: the SD-WAN-Color and SD-WAN-Node-ID is the same as in
+   Section 3.
+
+   Depending on the deployment of the cloud backbone, there are two
+   options for corresponding GW information discovery and advertisement.
+
+4.1.  Option 1: Link SID
+
+   Assume that SRv6 or SR-MPLS is running on the cloud backbone.  SD-WAN
+   tunnels will be established between the CPE and the corresponding GW.
+   For each tunnel, a link SID will be allocated by the GW.  Then the
+   link SID will be notified from the GW to the CPE through a dedicated
+   hello protocol or manual configuration.
+
+   A new Sub-TLV in the SD-WAN-Hybrid Tunnel Encapsulation attribute is
+   defined as follows:
+
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |  Type=TBD1 (Link SID subTLV)  |  Length (2 Octets)            |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ~                            link SID                           ~
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                                  Figure 4
+
+4.2.  Option 2: Gateway ID + tunnel IP address
+
+   The GW site ID and the destination tunnel IP address can be used as
+   the corresponding GW information.  A new Sub-TLV in the SD-WAN-Hybrid
+   Tunnel Encapsulation attribute is defined as follows:
+
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |  Type=TBD2 (GW info subTLV)   |  Length (2 Octets)            |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |      Egress GW Addr Family    | Address                       |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ (variable)                    +
+      ~                                                               ~
+      |           Egress GW Address                                   |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |  SD-WAN Tunnel Addr Family    | Address                       |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ (variable)                    +
+      ~                                                               ~
+      |                SD-WAN Tunnel Address                          |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+5.  Exchange include/exclude transit list from destination edge to
+    source edge
+
+   When a user tries to access certain service, the traffic may need to
+   go through certain Cloud Availability Regions or Zones to get better
+   security.  Or the traffic can not go through certain Cloud
+   Availability Regions or Zones due to the regulation.  As described in
+   [I-D.draft-dmk-rtgwg-multisegment-sdwan], the traffic enforcement
+   rule is indicated using the including/excluding transit list in the
+   data plane which is encapsulated at the source edge.
+
+   The destination edge knows the traffic enforcement rules for each
+   service behind it and need to pass the include/exclude transit list
+   to the source edge.  This document proposes to carry the list in the
+   client route using Metadata Path Attribute defined in
+   [I-D.draft-ietf-idr-5g-edge-service-metadata].  Two new Sub-TLVs are
+   defined to carry the include/exclude transit list.
+
+6.  Security Considerations
+
+   This document does not introduce any new security considerations.
+
+7.  IANA Considerations
+
+   TBD.
+
+8.  References
+
+8.1.  Normative References
+
+   [I-D.draft-ietf-idr-sdwan-edge-discovery]
+              Dunbar, L., Hares, S., Majumdar, K., Raszuk, R., and V.
+              Kasiviswanathan, "BGP UPDATE for SD-WAN Edge Discovery",
+              Work in Progress, Internet-Draft, draft-ietf-idr-sdwan-
+              edge-discovery-25, 22 July 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-idr-
+              sdwan-edge-discovery-25>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC4364]  Rosen, E. and Y. Rekhter, "BGP/MPLS IP Virtual Private
+              Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
+              2006, <https://www.rfc-editor.org/rfc/rfc4364>.
+
+   [I-D.draft-ietf-idr-5g-edge-service-metadata]
+              Dunbar, L., Majumdar, K., Li, C., Mishra, G. S., and Z.
+              Du, "BGP Extension for 5G Edge Service Metadata", Work in
+              Progress, Internet-Draft, draft-ietf-idr-5g-edge-service-
+              metadata-30, 18 September 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-idr-5g-
+              edge-service-metadata-30>.
+
+8.2.  Informative References
+
+   [I-D.draft-dmk-rtgwg-multisegment-sdwan]
+              Majumdar, K., Dunbar, L., Kasiviswanathan, V., Ramchandra,
+              A., and A. Choudhary, "Multi-segment SD-WAN via Cloud
+              DCs", Work in Progress, Internet-Draft, draft-dmk-rtgwg-
+              multisegment-sdwan-07, 20 February 2024,
+              <https://datatracker.ietf.org/doc/html/draft-dmk-rtgwg-
+              multisegment-sdwan-07>.
+
+Appendix A.  Acknowledgements
+
+   The authors would like to thank Haibo Wang for his contribution to
+   the document.
+
+Authors' Addresses
+
+   Cheng Sheng
+   Huawei
+   Beiqing Road
+   Beijing
+   Email: shengcheng@huawei.com
+
+
+   Hang Shi (editor)
+   Huawei
+   Beiqing Road
+   Beijing
+   China
+   Email: shihang9@huawei.com
